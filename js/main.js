@@ -737,6 +737,16 @@ async function renderSessionReport(sessionId) {
       </tbody>
     </table>
 
+    ${
+      profile.maxPowerReliable
+        ? `<h3>Courbes du profil</h3>
+           <div class="row" style="align-items:flex-start">
+             <div class="card" id="chart-fv" style="flex:1; min-width:300px"></div>
+             <div class="card" id="chart-pv" style="flex:1; min-width:300px"></div>
+           </div>`
+        : ""
+    }
+
     <h3>Profil complet (données avancées)</h3>
     <table class="data-table small">
       <tbody>
@@ -771,6 +781,13 @@ async function renderSessionReport(sessionId) {
         : ""
     }
   `;
+
+  if (profile.maxPowerReliable && window.VbtCharts) {
+    const fvData = VbtCharts.buildForceVelocityChartData(profile, sets);
+    const pvData = VbtCharts.buildPowerVelocityChartData(profile, sets);
+    document.getElementById("chart-fv").innerHTML = VbtCharts.renderChartSVG(fvData, { width: 460, height: 300 });
+    document.getElementById("chart-pv").innerHTML = VbtCharts.renderChartSVG(pvData, { width: 460, height: 300 });
+  }
 
   document.getElementById("export-pdf-btn").addEventListener("click", async () => {
     const logo = await loadLogoDataUrl();

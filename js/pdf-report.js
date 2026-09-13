@@ -156,6 +156,31 @@ function buildCrVitruvePdf({ athleteName, bodyweightKg, exercise, sessionDateDis
     doc.internal.pageSize.getHeight() - 10
   );
 
+  // Page 2 — courbes du profil (Charge/Force-Vélocité et Puissance-Vélocité)
+  if (profile.maxPowerReliable && window.VbtCharts) {
+    doc.addPage();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(...VBT_COLORS.text);
+    doc.text("Courbes du profil", marginX, 18);
+
+    const fvData = window.VbtCharts.buildForceVelocityChartData(profile, sets);
+    const pvData = window.VbtCharts.buildPowerVelocityChartData(profile, sets);
+    const chartWidth = pageWidth - marginX * 2;
+
+    window.VbtCharts.renderChartPdf(doc, fvData, { x: marginX, y: 28, width: chartWidth, height: 95 });
+    window.VbtCharts.renderChartPdf(doc, pvData, { x: marginX, y: 135, width: chartWidth, height: 95 });
+
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text(
+      "Droite et courbe théoriques calculées à partir de la régression charge-vélocité du test ; points = séries mesurées.",
+      marginX,
+      238
+    );
+  }
+
   return doc;
 }
 
