@@ -16,6 +16,7 @@ const DEFAULT_EXERCISES = [
 ];
 
 let LOGO_DATA_URL = null;
+let LOGO_ICON_DATA_URL = null;
 let currentUser = null;
 
 const appEl = () => document.getElementById("app");
@@ -66,6 +67,24 @@ async function loadLogoDataUrl() {
     LOGO_DATA_URL = null;
   }
   return LOGO_DATA_URL;
+}
+
+async function loadLogoIconDataUrl() {
+  if (LOGO_ICON_DATA_URL) return LOGO_ICON_DATA_URL;
+  try {
+    // Logo "icône" (le R. seul) utilisé en haut de page du PDF, distinct du
+    // logo complet (texte + icône) utilisé dans la signature de pied de page.
+    const res = await fetch("assets/logo-icon-pdf.jpg");
+    const blob = await res.blob();
+    LOGO_ICON_DATA_URL = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    LOGO_ICON_DATA_URL = null;
+  }
+  return LOGO_ICON_DATA_URL;
 }
 
 // ------------------------------------------------------------
@@ -795,7 +814,7 @@ async function renderSessionReport(sessionId) {
   }
 
   document.getElementById("export-pdf-btn").addEventListener("click", async () => {
-    const logo = await loadLogoDataUrl();
+    const [logo, logoIcon] = await Promise.all([loadLogoDataUrl(), loadLogoIconDataUrl()]);
     const doc = VbtPdf.buildCrVitruvePdf({
       athleteName: `${athlete.first_name} ${athlete.last_name}`,
       bodyweightKg: session.bodyweight_kg,
@@ -804,6 +823,7 @@ async function renderSessionReport(sessionId) {
       sets,
       profile,
       logoDataUrl: logo,
+      logoIconDataUrl: logoIcon,
     });
     doc.save(`CR-Vitruve_${athlete.last_name}_${session.exercise}_${session.session_date}.pdf`);
   });

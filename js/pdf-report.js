@@ -34,15 +34,36 @@ function fmtPct(n) {
  * @param {string} [params.logoDataUrl] logo encodé en base64 (data URL)
  * @returns {jsPDF} document, pas encore sauvegardé
  */
-function buildCrVitruvePdf({ athleteName, bodyweightKg, exercise, sessionDateDisplay, sets, profile, logoDataUrl }) {
+function buildCrVitruvePdf({
+  athleteName,
+  bodyweightKg,
+  exercise,
+  sessionDateDisplay,
+  sets,
+  profile,
+  logoDataUrl,
+  logoIconDataUrl,
+}) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const marginX = 15;
 
-  if (logoDataUrl) {
+  // Logo en haut de page : le "R." seul (icône), distinct du logo complet
+  // (texte + icône) utilisé dans la signature de pied de page.
+  const headerLogo = logoIconDataUrl || logoDataUrl;
+  if (headerLogo) {
     try {
-      doc.addImage(logoDataUrl, "JPEG", pageWidth - marginX - 45, 10, 45, 17);
+      const headerLogoHeight = 20;
+      const headerLogoWidth = logoIconDataUrl ? headerLogoHeight * (328 / 384) : 45;
+      doc.addImage(
+        headerLogo,
+        "JPEG",
+        pageWidth - marginX - headerLogoWidth,
+        8,
+        headerLogoWidth,
+        logoIconDataUrl ? headerLogoHeight : 17
+      );
     } catch (e) {
       // silencieux si le logo ne peut pas être chargé
     }
