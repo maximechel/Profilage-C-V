@@ -675,7 +675,24 @@ async function renderSessionReport(sessionId) {
     .order("set_number");
 
   const athlete = session.vbt_athletes;
-  const profile = session.results;
+
+  // Le profil est toujours recalculé à l'affichage à partir des séries brutes
+  // (plutôt que de se fier uniquement à la valeur mise en cache au moment de
+  // l'import) : ça garantit que les rapports déjà importés profitent aussi
+  // des corrections apportées au moteur de calcul, sans réimporter le CSV.
+  const setsForCalc = sets.map((s) => ({
+    load_kg: s.load_kg,
+    mcv_ms: s.mcv_ms,
+    power_w: s.power_w,
+  }));
+  const profile = VbtCalc.computeVbtProfile(
+    setsForCalc,
+    session.bodyweight_kg ? Number(session.bodyweight_kg) : null,
+    Number(session.mvt_used)
+  );
+  // Rafraîchit le cache en base pour que les autres vues (liste des tests
+  // d'un athlète) restent cohérentes, sans bloquer l'affichage du rapport.
+  sb.from("vbt_sessions").update({ results: profile }).eq("id", sessionId).then(() => {});
 
   appEl().innerHTML = `
     <p><a href="#/athlete/${athlete.id}">&larr; ${escapeHtml(athlete.first_name)} ${escapeHtml(athlete.last_name)}</a></p>
