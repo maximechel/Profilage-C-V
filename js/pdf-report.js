@@ -71,7 +71,7 @@ function buildCrVitruvePdf({ athleteName, bodyweightKg, exercise, sessionDateDis
     doc.text(String(value), marginX + 40, y);
     y += 6;
   });
-  y += 4;
+  y += 10;
 
   // Tableau des séries
   const setRows = sets.map((s, i) => [
@@ -101,18 +101,19 @@ function buildCrVitruvePdf({ athleteName, bodyweightKg, exercise, sessionDateDis
   const chartsShown = profile.maxPowerReliable && window.VbtCharts;
 
   if (chartsShown) {
-    y = doc.lastAutoTable.finalY + 10;
+    y = doc.lastAutoTable.finalY + 20;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.setTextColor(...VBT_COLORS.text);
     doc.text("Courbes du profil", marginX, y);
 
     const fvData = window.VbtCharts.buildForceVelocityChartData(profile, sets);
-    window.VbtCharts.renderChartPdf(doc, fvData, { x: marginX, y: y + 6, width: chartWidth, height: 95 });
+    window.VbtCharts.renderChartPdf(doc, fvData, { x: marginX, y: y + 8, width: chartWidth, height: 95 });
 
     doc.addPage();
+    const pvChartY = 22;
     const pvData = window.VbtCharts.buildPowerVelocityChartData(profile, sets);
-    window.VbtCharts.renderChartPdf(doc, pvData, { x: marginX, y: 14, width: chartWidth, height: 95 });
+    window.VbtCharts.renderChartPdf(doc, pvData, { x: marginX, y: pvChartY, width: chartWidth, height: 95 });
 
     doc.setFont("helvetica", "italic");
     doc.setFontSize(8);
@@ -120,10 +121,10 @@ function buildCrVitruvePdf({ athleteName, bodyweightKg, exercise, sessionDateDis
     doc.text(
       "Droite et courbe théoriques calculées à partir de la régression charge-vélocité du test ; points = séries mesurées.",
       marginX,
-      14 + 95 + 8
+      pvChartY + 95 + 8
     );
 
-    y = 14 + 95 + 8 + 12;
+    y = pvChartY + 95 + 8 + 22;
   } else {
     y = doc.lastAutoTable.finalY + 10;
   }
