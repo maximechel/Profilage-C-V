@@ -196,13 +196,48 @@ function buildCrVitruvePdf({ athleteName, bodyweightKg, exercise, sessionDateDis
     );
   }
 
-  doc.setFontSize(8);
-  doc.setTextColor(140, 140, 140);
-  doc.text(
-    `Généré le ${new Date().toLocaleDateString("fr-FR")} — Ruthene Coach'in`,
-    marginX,
-    doc.internal.pageSize.getHeight() - 10
-  );
+  // Signature de pied de page (logo + coordonnées du coach) sur fond blanc,
+  // reprise à l'identique sur chaque page — même présentation que les autres
+  // documents Ruthene Coach'in (programmes d'entraînement, etc.), sans le
+  // fond gris-bleu clair utilisé sur ces derniers.
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p);
+    const footerTopY = pageHeight - 30;
+
+    doc.setDrawColor(225, 225, 225);
+    doc.setLineWidth(0.3);
+    doc.line(marginX, footerTopY, pageWidth - marginX, footerTopY);
+
+    if (logoDataUrl) {
+      try {
+        doc.addImage(logoDataUrl, "JPEG", marginX, footerTopY + 4, 38, 14.3);
+      } catch (e) {
+        // silencieux si le logo ne peut pas être chargé
+      }
+    }
+
+    doc.setDrawColor(210, 210, 210);
+    doc.setLineWidth(0.2);
+    doc.line(marginX + 46, footerTopY + 4, marginX + 46, footerTopY + 27);
+
+    const textX = pageWidth - marginX;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text("Maxime Chelda", textX, footerTopY + 8, { align: "right" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(130, 130, 130);
+    doc.text("Préparateur physique", textX, footerTopY + 13, { align: "right" });
+    doc.text("06 32 19 57 79", textX, footerTopY + 18, { align: "right" });
+    doc.text("maxime@ruthene-coachin.fr", textX, footerTopY + 22.5, { align: "right" });
+
+    doc.setFontSize(7);
+    doc.setTextColor(200, 200, 200);
+    doc.text(`${p} / ${totalPages}`, textX, footerTopY + 27, { align: "right" });
+  }
 
   return doc;
 }
