@@ -182,7 +182,8 @@ function buildCrVitruvePdf({
     body: zoneRows,
     theme: "grid",
     styles: { fontSize: 9.5, halign: "center" },
-    headStyles: { fillColor: [230, 230, 230], textColor: [0, 0, 0], fontStyle: "bold" },
+    headStyles: { fillColor: VBT_COLORS.headerOrange, textColor: [0, 0, 0], fontStyle: "bold" },
+    alternateRowStyles: { fillColor: VBT_COLORS.altYellow },
     margin: { left: marginX, right: marginX },
     didParseCell: (data) => {
       if (data.section === "body" && data.row.index === zoneRows.length - 1) {
