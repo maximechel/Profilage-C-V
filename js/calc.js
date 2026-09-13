@@ -166,24 +166,42 @@ function computeVbtProfile(sets, bodyweightKg, mvt) {
   const deltaV = sets.length > 1 ? (vMaxMeasured - vMinMeasured) / (sets.length - 1) : null;
 
   // Régression quadratique Puissance = f(Charge) -> puissance maximale théorique
+  //
+  // Avec seulement quelques séries et des données de puissance réelles (donc
+  // bruitées), la régression quadratique peut donner une parabole qui n'a
+  // pas de vrai maximum exploitable : soit elle s'ouvre vers le haut
+  // (coefficient a >= 0 : pas de sommet, juste un minimum), soit son sommet
+  // tombe hors d'une plage physiologiquement plausible (ex: une charge à
+  // puissance max supérieure au 1RM estimé, ce qui est impossible — à charge
+  // maximale la vélocité tend vers 0, donc la puissance aussi). Dans ces cas,
+  // on affiche "non estimable" plutôt qu'un chiffre trompeur. C'est la même
+  // limite que dans le fichier Excel d'origine, où ce point nécessitait un
+  // contrôle visuel du coach sur la courbe avant de retenir l'équation.
   const { a, b, c } = quadraticRegression(loads, powers);
   let loadAtMaxPower = null;
   let pctRMatMaxPower = null;
   let powerAtPeak = null;
   let velocityAtPeak = null;
   let relMaxPowerOutput = null;
-  if (a !== 0) {
-    loadAtMaxPower = -b / (2 * a);
-    pctRMatMaxPower = abs1RM ? loadAtMaxPower / abs1RM : null;
-    // Reproduit la formule d'origine : mise à l'échelle de la puissance/vélocité
-    // mesurée maximale par le ratio (charge optimale / charge du point mesuré).
-    let idxMax = 0;
-    for (let i = 1; i < powers.length; i++) if (powers[i] > powers[idxMax]) idxMax = i;
-    if (loads[idxMax]) {
-      powerAtPeak = (loadAtMaxPower * powers[idxMax]) / loads[idxMax];
-      velocityAtPeak = (loadAtMaxPower * velocities[idxMax]) / loads[idxMax];
+  let maxPowerReliable = false;
+  if (a < 0) {
+    const candidateLoad = -b / (2 * a);
+    const withinPlausibleRange =
+      candidateLoad > 0 && (!abs1RM || candidateLoad < abs1RM);
+    if (withinPlausibleRange) {
+      maxPowerReliable = true;
+      loadAtMaxPower = candidateLoad;
+      pctRMatMaxPower = abs1RM ? loadAtMaxPower / abs1RM : null;
+      // Reproduit la formule d'origine : mise à l'échelle de la puissance/vélocité
+      // mesurée maximale par le ratio (charge optimale / charge du point mesuré).
+      let idxMax = 0;
+      for (let i = 1; i < powers.length; i++) if (powers[i] > powers[idxMax]) idxMax = i;
+      if (loads[idxMax]) {
+        powerAtPeak = (loadAtMaxPower * powers[idxMax]) / loads[idxMax];
+        velocityAtPeak = (loadAtMaxPower * velocities[idxMax]) / loads[idxMax];
+      }
+      relMaxPowerOutput = powerAtPeak && bodyweightKg ? powerAtPeak / bodyweightKg : null;
     }
-    relMaxPowerOutput = powerAtPeak && bodyweightKg ? powerAtPeak / bodyweightKg : null;
   }
 
   // Zones d'entraînement (méthode % vélocité max — Morin & Samozino)
@@ -218,6 +236,7 @@ function computeVbtProfile(sets, bodyweightKg, mvt) {
     deltaV,
     mvtUsed: mvt,
     powerRegression: { a, b, c },
+    maxPowerReliable,
     loadAtMaxPower,
     pctRMatMaxPower,
     maxPowerOutput: powerAtPeak,

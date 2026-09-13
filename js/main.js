@@ -725,17 +725,28 @@ async function renderSessionReport(sessionId) {
       <tbody>
         <tr><td>1RM absolu estimé</td><td>${fmtNum(profile.abs1RM, 1)} kg</td></tr>
         <tr><td>1RM relatif</td><td>${fmtNum(profile.rel1RM, 2)} × poids de corps</td></tr>
-        <tr><td>Puissance maximale estimée</td><td>${fmtNum(profile.maxPowerOutput, 0)} W</td></tr>
-        <tr><td>Puissance max relative</td><td>${fmtNum(profile.relMaxPowerOutput, 1)} W/kg</td></tr>
-        <tr><td>Charge à puissance maximale</td><td>${fmtNum(profile.loadAtMaxPower, 1)} kg (${fmtPct(
-    profile.pctRMatMaxPower
-  )} du 1RM)</td></tr>
+        <tr><td>Puissance maximale estimée</td><td>${
+          profile.maxPowerReliable ? fmtNum(profile.maxPowerOutput, 0) + " W" : "non estimable"
+        }</td></tr>
+        <tr><td>Puissance max relative</td><td>${
+          profile.maxPowerReliable ? fmtNum(profile.relMaxPowerOutput, 1) + " W/kg" : "non estimable"
+        }</td></tr>
+        <tr><td>Charge à puissance maximale</td><td>${
+          profile.maxPowerReliable
+            ? `${fmtNum(profile.loadAtMaxPower, 1)} kg (${fmtPct(profile.pctRMatMaxPower)} du 1RM)`
+            : "non estimable"
+        }</td></tr>
         <tr><td>Vélocité min mesurée</td><td>${fmtNum(profile.vMinMeasured)} m/s</td></tr>
         <tr><td>Vélocité max mesurée</td><td>${fmtNum(profile.vMaxMeasured)} m/s</td></tr>
         <tr><td>L0 (charge théorique à vélocité nulle)</td><td>${fmtNum(profile.l0, 1)} kg</td></tr>
         <tr><td>V0 (vélocité théorique à charge nulle)</td><td>${fmtNum(profile.v0)} m/s</td></tr>
       </tbody>
     </table>
+    ${
+      !profile.maxPowerReliable
+        ? `<p class="muted">« Non estimable » : avec les séries testées, la courbe puissance = f(charge) ne dessine pas un vrai pic exploitable (données trop bruitées ou charges toutes situées d'un même côté du pic réel). Ça n'affecte pas le 1RM estimé ni les zones d'entraînement ci-dessus, qui ne dépendent pas de ce calcul.</p>`
+        : ""
+    }
   `;
 
   document.getElementById("export-pdf-btn").addEventListener("click", async () => {
