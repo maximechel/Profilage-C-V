@@ -1,15 +1,15 @@
 // ============================================================
-// charts.js — Courbes Charge/Force-Vélocité et Puissance-Vélocité
+// charts.js — Courbes Charge/Force-Vitesse et Puissance-Vitesse
 //
 // Deux rendus pour les mêmes données : SVG (affichage à l'écran) et
 // dessin vectoriel jsPDF (export PDF). Palette et repères conformes au
 // guide dataviz interne (2 séries -> légende, marques épaisseur 2px,
-// axes discrets) : slot 1 (bleu #2a78d6) pour la courbe théorique,
+// axes discrets) : slot 1 (bleu #2a78d6) pour la droite/courbe de tendance,
 // slot 2 (orange #eb6834) pour les points mesurés.
 // ============================================================
 
 const CHART_COLORS = {
-  line: "#2a78d6", // théorique (slot 1)
+  line: "#2a78d6", // de tendance (slot 1)
   scatter: "#eb6834", // mesuré (slot 2)
   grid: "#d8d8d5",
   axis: "#8a8a86",
@@ -33,7 +33,7 @@ function niceScale(max, count = 5) {
 }
 
 /**
- * Construit les données du profil Charge (Force) - Vélocité.
+ * Construit les données du profil Charge (Force) - Vitesse.
  * @param {object} profile résultat de VbtCalc.computeVbtProfile
  * @param {Array<{load_kg:number, mcv_ms:number}>} sets
  */
@@ -44,20 +44,20 @@ function buildForceVelocityChartData(profile, sets) {
   const xScale = niceScale(Math.max(v0, ...scatter.map((p) => p.x)) * 1.05);
   const yScale = niceScale(Math.max(l0, ...scatter.map((p) => p.y)) * 1.05);
   return {
-    title: "Profil Charge-Vélocité (Force-Vélocité)",
-    xLabel: "Vélocité (m/s)",
+    title: "Profil Charge-Vitesse (Force-Vitesse)",
+    xLabel: "Vitesse (m/s)",
     yLabel: "Charge (kg)",
     xScale,
     yScale,
-    line: { points: [{ x: 0, y: l0 }, { x: v0, y: 0 }], color: CHART_COLORS.line, label: "Droite théorique" },
+    line: { points: [{ x: 0, y: l0 }, { x: v0, y: 0 }], color: CHART_COLORS.line, label: "Droite de tendance" },
     scatter: { points: scatter, color: CHART_COLORS.scatter, label: "Séries mesurées" },
   };
 }
 
 /**
- * Construit les données du profil Puissance - Vélocité (parabole
+ * Construit les données du profil Puissance - Vitesse (parabole
  * théorique P(v) = g × L(v) × v, où L(v) est la charge donnée par la
- * droite charge-vélocité à la vélocité v).
+ * droite charge-vitesse à la vitesse v).
  */
 function buildPowerVelocityChartData(profile, sets) {
   const v0 = profile.v0;
@@ -75,12 +75,12 @@ function buildPowerVelocityChartData(profile, sets) {
   const xScale = niceScale(Math.max(v0, ...scatter.map((p) => p.x)) * 1.05);
   const yScale = niceScale(yMaxCandidate * 1.15);
   return {
-    title: "Profil Puissance-Vélocité",
-    xLabel: "Vélocité (m/s)",
+    title: "Profil Puissance-Vitesse",
+    xLabel: "Vitesse (m/s)",
     yLabel: "Puissance (W)",
     xScale,
     yScale,
-    line: { points: curve, color: CHART_COLORS.line, label: "Courbe théorique" },
+    line: { points: curve, color: CHART_COLORS.line, label: "Courbe de tendance" },
     scatter: { points: scatter, color: CHART_COLORS.scatter, label: "Séries mesurées" },
   };
 }
@@ -237,7 +237,7 @@ function renderChartPdf(doc, config, box) {
     doc.text(fmtTick(t), x, plotY + plotH + 4, { align: "center" });
   });
 
-  // Courbe théorique
+  // Courbe de tendance
   doc.setDrawColor(...hexToRgb(config.line.color));
   doc.setLineWidth(0.7);
   const pts = config.line.points;

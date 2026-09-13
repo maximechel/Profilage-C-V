@@ -1,9 +1,9 @@
 // ============================================================
-// calc.js — Moteur de calcul du profil charge-vélocité
+// calc.js — Moteur de calcul du profil charge-vitesse
 //
 // Reproduit fidèlement les formules du fichier Excel d'origine
 // (onglets VITRUVE + CR VITRUVE) :
-//   - régression linéaire vélocité = f(charge)   -> 1RM estimé
+//   - régression linéaire vitesse = f(charge)   -> 1RM estimé
 //   - régression quadratique puissance = f(charge) -> puissance max
 //   - interpolation linéaire pour les zones d'entraînement
 //
@@ -100,17 +100,17 @@ function solve3x3(M) {
 }
 
 /**
- * Interpole la charge (kg) correspondant à une vélocité cible, à partir
- * des points mesurés (charge, vélocité). Reproduit MATCH(...,-1) + INDEX
+ * Interpole la charge (kg) correspondant à une vitesse cible, à partir
+ * des points mesurés (charge, vitesse). Reproduit MATCH(...,-1) + INDEX
  * d'Excel (interpolation linéaire entre les deux points encadrants).
- * Retourne la chaîne "hors plage" si la vélocité cible sort de l'intervalle
+ * Retourne la chaîne "hors plage" si la vitesse cible sort de l'intervalle
  * mesuré, comme dans le fichier d'origine.
  * @param {{load:number, velocity:number}[]} points
  * @param {number} targetVelocity
  * @returns {number|"hors plage"}
  */
 function interpolateLoadAtVelocity(points, targetVelocity) {
-  // Tri par vélocité décroissante (charge croissante), comme dans le
+  // Tri par vitesse décroissante (charge croissante), comme dans le
   // tableau VITRUVE d'origine.
   const sorted = points.slice().sort((a, b) => b.velocity - a.velocity);
   const velocities = sorted.map((p) => p.velocity);
@@ -139,11 +139,11 @@ function interpolateLoadAtVelocity(points, targetVelocity) {
 }
 
 /**
- * Calcule le profil complet charge-vélocité pour une séance.
+ * Calcule le profil complet charge-vitesse pour une séance.
  *
  * @param {Array<{load_kg:number, mcv_ms:number, power_w:number}>} sets
  * @param {number|null} bodyweightKg
- * @param {number} mvt  Seuil de vélocité minimale (m/s) retenu pour l'exercice
+ * @param {number} mvt  Seuil de vitesse minimale (m/s) retenu pour l'exercice
  * @returns {object} profil complet (voir structure ci-dessous)
  */
 function computeVbtProfile(sets, bodyweightKg, mvt) {
@@ -157,7 +157,7 @@ function computeVbtProfile(sets, bodyweightKg, mvt) {
   const abs1RM = slope !== 0 ? (mvt - intercept) / slope : null;
   const rel1RM = abs1RM && bodyweightKg ? abs1RM / bodyweightKg : null;
 
-  // V0 (vélocité à charge nulle) / L0 (charge à vélocité nulle)
+  // V0 (vitesse à charge nulle) / L0 (charge à vitesse nulle)
   const v0 = intercept;
   const l0 = slope !== 0 ? -intercept / slope : null;
 
@@ -166,7 +166,7 @@ function computeVbtProfile(sets, bodyweightKg, mvt) {
   const deltaV = sets.length > 1 ? (vMaxMeasured - vMinMeasured) / (sets.length - 1) : null;
 
   // Charge et puissance à puissance maximale — méthode théorique à partir de
-  // la droite charge-vélocité (et non d'un ajustement quadratique sur les
+  // la droite charge-vitesse (et non d'un ajustement quadratique sur les
   // points de puissance mesurés).
   //
   // Pourquoi : avec seulement quelques séries, la puissance mesurée par série
@@ -178,14 +178,14 @@ function computeVbtProfile(sets, bodyweightKg, mvt) {
   // un contrôle visuel du coach sur le graphique avant de retenir l'équation.
   //
   // On utilise à la place la relation théorique classique en musculation
-  // charge-vélocité (modèle Puissance = Force × Vélocité, avec Force ≈
-  // Charge × g, et une relation charge-vélocité linéaire — cf. Samozino,
-  // Jaric & Markovic) : pour une droite vélocité = f(charge), la puissance
-  // Charge×g×Vélocité(Charge) est elle-même une parabole dont le sommet est
-  // toujours bien défini, à charge = L0/2 et vélocité = V0/2. Résultat
+  // charge-vitesse (modèle Puissance = Force × Vitesse, avec Force ≈
+  // Charge × g, et une relation charge-vitesse linéaire — cf. Samozino,
+  // Jaric & Markovic) : pour une droite vitesse = f(charge), la puissance
+  // Charge×g×Vitesse(Charge) est elle-même une parabole dont le sommet est
+  // toujours bien défini, à charge = L0/2 et vitesse = V0/2. Résultat
   // beaucoup plus stable que l'ajustement direct sur les points mesurés, et
-  // toujours calculable dès lors que la droite charge-vélocité est valide
-  // (pente négative — la vélocité diminue quand la charge augmente).
+  // toujours calculable dès lors que la droite charge-vitesse est valide
+  // (pente négative — la vitesse diminue quand la charge augmente).
   const G = 9.81;
   let loadAtMaxPower = null;
   let pctRMatMaxPower = null;
@@ -201,11 +201,11 @@ function computeVbtProfile(sets, bodyweightKg, mvt) {
     relMaxPowerOutput = bodyweightKg ? powerAtPeak / bodyweightKg : null;
   }
 
-  // Zones d'entraînement (méthode % vélocité max — Morin & Samozino)
+  // Zones d'entraînement (méthode % vitesse max — Morin & Samozino)
   const points = sets.map((s) => ({ load: Number(s.load_kg), velocity: Number(s.mcv_ms) }));
   const zoneDefs = [
-    { name: "Vélocité maximale", vMinFactor: 0.9, vMaxFactor: 1.0 },
-    { name: "Vélocité de puissance", vMinFactor: 0.7, vMaxFactor: 0.9 },
+    { name: "Vitesse maximale", vMinFactor: 0.9, vMaxFactor: 1.0 },
+    { name: "Vitesse de puissance", vMinFactor: 0.7, vMaxFactor: 0.9 },
     { name: "Puissance maximale", vMinFactor: 0.5, vMaxFactor: 0.7 },
     { name: "Force-vitesse", vMinFactor: 0.3, vMaxFactor: 0.5 },
     { name: "Force maximale", vMinFactor: null, vMaxFactor: 0.3 },

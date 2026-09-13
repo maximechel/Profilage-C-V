@@ -173,7 +173,7 @@ function renderLogin() {
   appEl().innerHTML = `
     <div class="login-wrap">
       <img src="assets/logo.png" alt="Ruthene Coach'in" class="login-logo" />
-      <h1>Profil Charge - Vélocité</h1>
+      <h1>Profil Charge - Vitesse</h1>
       <p class="muted">Connecte-toi avec ton compte (le même que ton application de coaching).</p>
       <form id="login-form" class="stack">
         <label>Email<input type="email" id="login-email" required autocomplete="username" /></label>
@@ -367,10 +367,10 @@ async function renderSettings() {
     return;
   }
   appEl().innerHTML = `
-    <h2>Seuils de vélocité minimale (MVT) par exercice</h2>
+    <h2>Seuils de vitesse minimale (MVT) par exercice</h2>
     <p class="muted">
-      Le MVT est la vélocité (m/s) en-dessous de laquelle on estime que l'athlète est proche de son 1RM.
-      Les valeurs pré-remplies sont des estimations médianes tirées de la littérature charge-vélocité
+      Le MVT est la vitesse (m/s) en-dessous de laquelle on estime que l'athlète est proche de son 1RM.
+      Les valeurs pré-remplies sont des estimations médianes tirées de la littérature charge-vitesse
       (plage novice → élite) : à ajuster selon tes propres observations. Voir la
       <a href="https://vbtcoach.com/charts/mvt-by-lift/" target="_blank" rel="noopener">table de référence VBT Coach</a>.
     </p>
@@ -459,7 +459,7 @@ async function renderImport() {
 
   appEl().innerHTML = `
     <h2>Importer un CSV Vitruve</h2>
-    <p class="muted">Sélectionne le fichier CSV exporté depuis l'application Vitruve. L'app détecte automatiquement les séances (une par athlète + exercice + date) et calcule le profil charge-vélocité.</p>
+    <p class="muted">Sélectionne le fichier CSV exporté depuis l'application Vitruve. L'app détecte automatiquement les séances (une par athlète + exercice + date) et calcule le profil charge-vitesse.</p>
     <input type="file" id="csv-file-input" accept=".csv,text/csv" />
     <div id="import-warnings"></div>
     <div id="import-sessions"></div>
@@ -752,7 +752,7 @@ async function renderSessionReport(sessionId) {
 
     <h3>Zone d'entraînement</h3>
     <table class="data-table">
-      <thead><tr><th>Indication</th><th>Vélocité min (m/s)</th><th>Vélocité max (m/s)</th><th>Charge min (kg)</th><th>Charge max (kg)</th><th>% 1RM min</th><th>% 1RM max</th></tr></thead>
+      <thead><tr><th>Indication</th><th>Vitesse min (m/s)</th><th>Vitesse max (m/s)</th><th>Charge min (kg)</th><th>Charge max (kg)</th><th>% 1RM min</th><th>% 1RM max</th></tr></thead>
       <tbody>
         ${profile.trainingZones
           .map(
@@ -766,9 +766,9 @@ async function renderSessionReport(sessionId) {
       </tbody>
     </table>
     <p class="muted">
-      Zones définies selon la méthode par pourcentage de vélocité maximale, telle que
+      Zones définies selon la méthode par pourcentage de vitesse maximale, telle que
       popularisée par les travaux de Jean-Benoît Morin et Pierre Samozino sur le profil
-      force-vitesse et l'entraînement basé sur la vélocité (VBT).
+      force-vitesse et l'entraînement basé sur la vitesse (VBT).
     </p>
 
     <h3>Profil complet (données avancées)</h3>
@@ -787,21 +787,21 @@ async function renderSessionReport(sessionId) {
             ? `${fmtNum(profile.loadAtMaxPower, 1)} kg (${fmtPct(profile.pctRMatMaxPower)} du 1RM)`
             : "donnée du test invalide"
         }</td></tr>
-        <tr><td>Vélocité min mesurée</td><td>${fmtNum(profile.vMinMeasured)} m/s</td></tr>
-        <tr><td>Vélocité max mesurée</td><td>${fmtNum(profile.vMaxMeasured)} m/s</td></tr>
-        <tr><td>L0 (charge théorique à vélocité nulle)</td><td>${fmtNum(profile.l0, 1)} kg</td></tr>
-        <tr><td>V0 (vélocité théorique à charge nulle)</td><td>${fmtNum(profile.v0)} m/s</td></tr>
+        <tr><td>Vitesse min mesurée</td><td>${fmtNum(profile.vMinMeasured)} m/s</td></tr>
+        <tr><td>Vitesse max mesurée</td><td>${fmtNum(profile.vMaxMeasured)} m/s</td></tr>
+        <tr><td>L0 (charge théorique à vitesse nulle)</td><td>${fmtNum(profile.l0, 1)} kg</td></tr>
+        <tr><td>V0 (vitesse théorique à charge nulle)</td><td>${fmtNum(profile.v0)} m/s</td></tr>
       </tbody>
     </table>
     <p class="muted">
       La puissance maximale et la charge associée sont calculées à partir de la droite
-      charge-vélocité du test (charge optimale = L0 / 2, vélocité optimale = V0 / 2 — méthode
-      standard en musculation charge-vélocité), et non d'un ajustement direct sur les quelques
+      charge-vitesse du test (charge optimale = L0 / 2, vitesse optimale = V0 / 2 — méthode
+      standard en musculation charge-vitesse), et non d'un ajustement direct sur les quelques
       points de puissance mesurés, plus sensible au bruit de mesure série par série.
     </p>
     ${
       !profile.maxPowerReliable
-        ? `<p class="warning">« Donnée du test invalide » : la vélocité mesurée n'a pas diminué quand la charge a augmenté sur cette séance — vérifie les séries saisies (charges/vélocités inversées ?).</p>`
+        ? `<p class="warning">« Donnée du test invalide » : la vitesse mesurée n'a pas diminué quand la charge a augmenté sur cette séance — vérifie les séries saisies (charges/vitesses inversées ?).</p>`
         : ""
     }
   `;

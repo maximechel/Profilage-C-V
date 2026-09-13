@@ -16,8 +16,8 @@ const VBT_COLORS = {
 // "CR VITRUVE" d'origine (une teinte pastel distincte par ligne plutôt qu'une
 // alternance jaune/blanc).
 const ZONE_ROW_COLORS = [
-  [209, 236, 249], // Vélocité maximale — bleu clair
-  [223, 241, 211], // Vélocité de puissance — vert clair
+  [209, 236, 249], // Vitesse maximale — bleu clair
+  [223, 241, 211], // Vitesse de puissance — vert clair
   [236, 207, 237], // Puissance maximale — violet clair
   [247, 227, 215], // Force-vitesse — orange clair
   VBT_COLORS.maxStrengthRed, // Force maximale — rouge
@@ -86,7 +86,7 @@ function buildCrVitruvePdf({
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.setTextColor(...VBT_COLORS.text);
-  doc.text("Rapport de profil charge - vélocité", marginX, 18);
+  doc.text("Rapport de profil charge - vitesse", marginX, 18);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text("(CR VITRUVE)", marginX, 24);
@@ -128,9 +128,9 @@ function buildCrVitruvePdf({
     margin: { left: marginX, right: marginX },
   });
 
-  // Courbe Charge/Force-Vélocité — directement sous le tableau des séries,
+  // Courbe Charge/Force-Vitesse — directement sous le tableau des séries,
   // sur la même page (plutôt que sur une page à part entièrement vide en
-  // dessous du tableau). La courbe Puissance-Vélocité suit sur la page
+  // dessous du tableau). La courbe Puissance-Vitesse suit sur la page
   // suivante, avec les zones d'entraînement juste après.
   const chartWidth = pageWidth - marginX * 2;
   const chartsShown = profile.maxPowerReliable && window.VbtCharts;
@@ -155,7 +155,7 @@ function buildCrVitruvePdf({
     doc.setFontSize(8);
     doc.setTextColor(120, 120, 120);
     doc.text(
-      "Droite et courbe théoriques calculées à partir de la régression charge-vélocité du test ; points = séries mesurées.",
+      "Droite et courbe de tendance calculées à partir de la régression charge-vitesse du test ; points = séries mesurées.",
       marginX,
       pvChartY + 95 + 8
     );
@@ -186,8 +186,8 @@ function buildCrVitruvePdf({
     head: [
       [
         "Indication",
-        "Vélocité min (m/s)",
-        "Vélocité max (m/s)",
+        "Vitesse min (m/s)",
+        "Vitesse max (m/s)",
         "Charge min (kg)",
         "Charge max (kg)",
         "% 1RM min",
@@ -211,9 +211,9 @@ function buildCrVitruvePdf({
   doc.setFontSize(7.5);
   doc.setTextColor(120, 120, 120);
   const refNote =
-    "Zones d'entraînement définies selon la méthode par pourcentage de vélocité maximale, telle que " +
+    "Zones d'entraînement définies selon la méthode par pourcentage de vitesse maximale, telle que " +
     "popularisée par les travaux de Jean-Benoît Morin et Pierre Samozino sur le profil force-vitesse et " +
-    "l'entraînement basé sur la vélocité (VBT).";
+    "l'entraînement basé sur la vitesse (VBT).";
   const refLines = doc.splitTextToSize(refNote, pageWidth - marginX * 2);
   doc.text(refLines, marginX, y);
   y += refLines.length * 3.3 + 5;
@@ -223,7 +223,7 @@ function buildCrVitruvePdf({
     doc.setFontSize(9);
     doc.setTextColor(...VBT_COLORS.text);
     doc.text(
-      `1RM estimé (méthode charge-vélocité, seuil MVT = ${fmt(profile.mvtUsed, 2)} m/s) : ${fmt(
+      `1RM estimé (méthode charge-vitesse, seuil MVT = ${fmt(profile.mvtUsed, 2)} m/s) : ${fmt(
         profile.abs1RM,
         1
       )} kg`,

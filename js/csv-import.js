@@ -182,7 +182,7 @@ function parseVitruveCsv(text) {
 
   if (parsedRows.length === 0) {
     warnings.push(
-      "Aucune ligne exploitable n'a pu être lue. Vérifie que le fichier correspond bien à un export Vitruve (séries de charge/vélocité)."
+      "Aucune ligne exploitable n'a pu être lue. Vérifie que le fichier correspond bien à un export Vitruve (séries de charge/vitesse)."
     );
     return { sessions: [], warnings };
   }
