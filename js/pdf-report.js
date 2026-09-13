@@ -93,9 +93,40 @@ function buildCrVitruvePdf({ athleteName, bodyweightKg, exercise, sessionDateDis
     margin: { left: marginX, right: marginX },
   });
 
-  y = doc.lastAutoTable.finalY + 10;
+  // Courbes du profil (Charge/Force-Vélocité et Puissance-Vélocité) — avant
+  // les zones d'entraînement, sur une page dédiée.
+  if (profile.maxPowerReliable && window.VbtCharts) {
+    doc.addPage();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(...VBT_COLORS.text);
+    doc.text("Courbes du profil", marginX, 18);
+
+    const fvData = window.VbtCharts.buildForceVelocityChartData(profile, sets);
+    const pvData = window.VbtCharts.buildPowerVelocityChartData(profile, sets);
+    const chartWidth = pageWidth - marginX * 2;
+
+    window.VbtCharts.renderChartPdf(doc, fvData, { x: marginX, y: 28, width: chartWidth, height: 95 });
+    window.VbtCharts.renderChartPdf(doc, pvData, { x: marginX, y: 135, width: chartWidth, height: 95 });
+
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text(
+      "Droite et courbe théoriques calculées à partir de la régression charge-vélocité du test ; points = séries mesurées.",
+      marginX,
+      238
+    );
+
+    doc.addPage();
+    y = 18;
+  } else {
+    y = doc.lastAutoTable.finalY + 10;
+  }
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
+  doc.setTextColor(...VBT_COLORS.text);
   doc.text("ZONE D'ENTRAÎNEMENT", marginX, y);
   y += 4;
 
@@ -134,10 +165,22 @@ function buildCrVitruvePdf({ athleteName, bodyweightKg, exercise, sessionDateDis
     },
   });
 
-  y = doc.lastAutoTable.finalY + 8;
+  y = doc.lastAutoTable.finalY + 5;
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(7.5);
+  doc.setTextColor(120, 120, 120);
+  const refNote =
+    "Zones d'entraînement définies selon la méthode par pourcentage de vélocité maximale, telle que " +
+    "popularisée par les travaux de Jean-Benoît Morin et Pierre Samozino sur le profil force-vitesse et " +
+    "l'entraînement basé sur la vélocité (VBT).";
+  const refLines = doc.splitTextToSize(refNote, pageWidth - marginX * 2);
+  doc.text(refLines, marginX, y);
+  y += refLines.length * 3.3 + 5;
+
   if (typeof profile.abs1RM === "number") {
     doc.setFont("helvetica", "italic");
     doc.setFontSize(9);
+    doc.setTextColor(...VBT_COLORS.text);
     doc.text(
       `1RM estimé (méthode charge-vélocité, seuil MVT = ${fmt(profile.mvtUsed, 2)} m/s) : ${fmt(
         profile.abs1RM,
@@ -155,31 +198,6 @@ function buildCrVitruvePdf({ athleteName, bodyweightKg, exercise, sessionDateDis
     marginX,
     doc.internal.pageSize.getHeight() - 10
   );
-
-  // Page 2 — courbes du profil (Charge/Force-Vélocité et Puissance-Vélocité)
-  if (profile.maxPowerReliable && window.VbtCharts) {
-    doc.addPage();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(...VBT_COLORS.text);
-    doc.text("Courbes du profil", marginX, 18);
-
-    const fvData = window.VbtCharts.buildForceVelocityChartData(profile, sets);
-    const pvData = window.VbtCharts.buildPowerVelocityChartData(profile, sets);
-    const chartWidth = pageWidth - marginX * 2;
-
-    window.VbtCharts.renderChartPdf(doc, fvData, { x: marginX, y: 28, width: chartWidth, height: 95 });
-    window.VbtCharts.renderChartPdf(doc, pvData, { x: marginX, y: 135, width: chartWidth, height: 95 });
-
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(8);
-    doc.setTextColor(120, 120, 120);
-    doc.text(
-      "Droite et courbe théoriques calculées à partir de la régression charge-vélocité du test ; points = séries mesurées.",
-      marginX,
-      238
-    );
-  }
 
   return doc;
 }

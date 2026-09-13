@@ -721,6 +721,16 @@ async function renderSessionReport(sessionId) {
       </tbody>
     </table>
 
+    ${
+      profile.maxPowerReliable
+        ? `<h3>Courbes du profil</h3>
+           <div class="row" style="align-items:flex-start">
+             <div class="card" id="chart-fv" style="flex:1; min-width:300px"></div>
+             <div class="card" id="chart-pv" style="flex:1; min-width:300px"></div>
+           </div>`
+        : ""
+    }
+
     <h3>Zone d'entraînement</h3>
     <table class="data-table">
       <thead><tr><th>Indication</th><th>Vélocité min (m/s)</th><th>Vélocité max (m/s)</th><th>Charge max (kg)</th><th>Charge min (kg)</th><th>% 1RM max</th><th>% 1RM min</th></tr></thead>
@@ -736,16 +746,11 @@ async function renderSessionReport(sessionId) {
           .join("")}
       </tbody>
     </table>
-
-    ${
-      profile.maxPowerReliable
-        ? `<h3>Courbes du profil</h3>
-           <div class="row" style="align-items:flex-start">
-             <div class="card" id="chart-fv" style="flex:1; min-width:300px"></div>
-             <div class="card" id="chart-pv" style="flex:1; min-width:300px"></div>
-           </div>`
-        : ""
-    }
+    <p class="muted">
+      Zones définies selon la méthode par pourcentage de vélocité maximale, telle que
+      popularisée par les travaux de Jean-Benoît Morin et Pierre Samozino sur le profil
+      force-vitesse et l'entraînement basé sur la vélocité (VBT).
+    </p>
 
     <h3>Profil complet (données avancées)</h3>
     <table class="data-table small">
