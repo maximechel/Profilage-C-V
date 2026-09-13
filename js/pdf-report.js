@@ -175,10 +175,10 @@ function buildCrVitruvePdf({
     z.name,
     fmt(z.vMin, 2),
     fmt(z.vMax, 2),
-    fmt(z.loadMax, 0),
     fmt(z.loadMin, 0),
-    fmtPct(z.pctMax),
+    fmt(z.loadMax, 0),
     fmtPct(z.pctMin),
+    fmtPct(z.pctMax),
   ]);
 
   doc.autoTable({
@@ -188,10 +188,10 @@ function buildCrVitruvePdf({
         "Indication",
         "Vélocité min (m/s)",
         "Vélocité max (m/s)",
-        "Charge max (kg)",
         "Charge min (kg)",
-        "% 1RM max",
+        "Charge max (kg)",
         "% 1RM min",
+        "% 1RM max",
       ],
     ],
     body: zoneRows,
