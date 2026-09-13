@@ -93,21 +93,26 @@ function buildCrVitruvePdf({ athleteName, bodyweightKg, exercise, sessionDateDis
     margin: { left: marginX, right: marginX },
   });
 
-  // Courbes du profil (Charge/Force-Vélocité et Puissance-Vélocité) — avant
-  // les zones d'entraînement, sur une page dédiée.
-  if (profile.maxPowerReliable && window.VbtCharts) {
-    doc.addPage();
+  // Courbe Charge/Force-Vélocité — directement sous le tableau des séries,
+  // sur la même page (plutôt que sur une page à part entièrement vide en
+  // dessous du tableau). La courbe Puissance-Vélocité suit sur la page
+  // suivante, avec les zones d'entraînement juste après.
+  const chartWidth = pageWidth - marginX * 2;
+  const chartsShown = profile.maxPowerReliable && window.VbtCharts;
+
+  if (chartsShown) {
+    y = doc.lastAutoTable.finalY + 10;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.setTextColor(...VBT_COLORS.text);
-    doc.text("Courbes du profil", marginX, 18);
+    doc.text("Courbes du profil", marginX, y);
 
     const fvData = window.VbtCharts.buildForceVelocityChartData(profile, sets);
-    const pvData = window.VbtCharts.buildPowerVelocityChartData(profile, sets);
-    const chartWidth = pageWidth - marginX * 2;
+    window.VbtCharts.renderChartPdf(doc, fvData, { x: marginX, y: y + 6, width: chartWidth, height: 95 });
 
-    window.VbtCharts.renderChartPdf(doc, fvData, { x: marginX, y: 28, width: chartWidth, height: 95 });
-    window.VbtCharts.renderChartPdf(doc, pvData, { x: marginX, y: 135, width: chartWidth, height: 95 });
+    doc.addPage();
+    const pvData = window.VbtCharts.buildPowerVelocityChartData(profile, sets);
+    window.VbtCharts.renderChartPdf(doc, pvData, { x: marginX, y: 14, width: chartWidth, height: 95 });
 
     doc.setFont("helvetica", "italic");
     doc.setFontSize(8);
@@ -115,11 +120,10 @@ function buildCrVitruvePdf({ athleteName, bodyweightKg, exercise, sessionDateDis
     doc.text(
       "Droite et courbe théoriques calculées à partir de la régression charge-vélocité du test ; points = séries mesurées.",
       marginX,
-      238
+      14 + 95 + 8
     );
 
-    doc.addPage();
-    y = 18;
+    y = 14 + 95 + 8 + 12;
   } else {
     y = doc.lastAutoTable.finalY + 10;
   }
