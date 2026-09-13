@@ -751,12 +751,12 @@ async function renderSessionReport(sessionId) {
     }
 
     <h3>Zone d'entraînement</h3>
-    <table class="data-table">
+    <table class="data-table zone-table">
       <thead><tr><th>Indication</th><th>Vitesse min (m/s)</th><th>Vitesse max (m/s)</th><th>Charge min (kg)</th><th>Charge max (kg)</th><th>% 1RM min</th><th>% 1RM max</th></tr></thead>
       <tbody>
         ${profile.trainingZones
           .map(
-            (z, i) => `<tr class="${i === profile.trainingZones.length - 1 ? "zone-max" : ""}">
+            (z, i) => `<tr class="zone-row-${i}">
               <td>${escapeHtml(z.name)}</td><td>${fmtNum(z.vMin)}</td><td>${fmtNum(z.vMax)}</td>
               <td>${fmtNum(z.loadMin, 0)}</td><td>${fmtNum(z.loadMax, 0)}</td>
               <td>${fmtPct(z.pctMin)}</td><td>${fmtPct(z.pctMax)}</td>

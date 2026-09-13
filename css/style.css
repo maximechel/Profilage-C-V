@@ -100,7 +100,17 @@ table.data-table th, table.data-table td {
 }
 table.data-table thead th { background: var(--orange); color: #222; }
 table.data-table tbody tr:nth-child(even) { background: #fffbe8; }
-table.data-table tr.zone-max { background: var(--red) !important; }
+
+/* Tableau des zones d'entraînement : en-tête blanc et une couleur pastel par
+   ligne, identiques à celles utilisées dans le PDF (reprises de l'onglet
+   Excel "CR VITRUVE" d'origine), plutôt que l'alternance jaune générique. */
+table.zone-table thead th { background: #fff; color: #222; }
+table.zone-table tbody tr:nth-child(even) { background: transparent; }
+table.zone-table tbody tr.zone-row-0 { background: #d1ecf9; }
+table.zone-table tbody tr.zone-row-1 { background: #dff1d3; }
+table.zone-table tbody tr.zone-row-2 { background: #eccfed; }
+table.zone-table tbody tr.zone-row-3 { background: #f7e3d7; }
+table.zone-table tbody tr.zone-row-4 { background: #ee7e82; }
 
 .login-wrap {
   max-width: 380px;
