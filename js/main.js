@@ -726,15 +726,15 @@ async function renderSessionReport(sessionId) {
         <tr><td>1RM absolu estimé</td><td>${fmtNum(profile.abs1RM, 1)} kg</td></tr>
         <tr><td>1RM relatif</td><td>${fmtNum(profile.rel1RM, 2)} × poids de corps</td></tr>
         <tr><td>Puissance maximale estimée</td><td>${
-          profile.maxPowerReliable ? fmtNum(profile.maxPowerOutput, 0) + " W" : "non estimable"
+          profile.maxPowerReliable ? fmtNum(profile.maxPowerOutput, 0) + " W" : "donnée du test invalide"
         }</td></tr>
         <tr><td>Puissance max relative</td><td>${
-          profile.maxPowerReliable ? fmtNum(profile.relMaxPowerOutput, 1) + " W/kg" : "non estimable"
+          profile.maxPowerReliable ? fmtNum(profile.relMaxPowerOutput, 1) + " W/kg" : "donnée du test invalide"
         }</td></tr>
         <tr><td>Charge à puissance maximale</td><td>${
           profile.maxPowerReliable
             ? `${fmtNum(profile.loadAtMaxPower, 1)} kg (${fmtPct(profile.pctRMatMaxPower)} du 1RM)`
-            : "non estimable"
+            : "donnée du test invalide"
         }</td></tr>
         <tr><td>Vélocité min mesurée</td><td>${fmtNum(profile.vMinMeasured)} m/s</td></tr>
         <tr><td>Vélocité max mesurée</td><td>${fmtNum(profile.vMaxMeasured)} m/s</td></tr>
@@ -742,9 +742,15 @@ async function renderSessionReport(sessionId) {
         <tr><td>V0 (vélocité théorique à charge nulle)</td><td>${fmtNum(profile.v0)} m/s</td></tr>
       </tbody>
     </table>
+    <p class="muted">
+      La puissance maximale et la charge associée sont calculées à partir de la droite
+      charge-vélocité du test (charge optimale = L0 / 2, vélocité optimale = V0 / 2 — méthode
+      standard en musculation charge-vélocité), et non d'un ajustement direct sur les quelques
+      points de puissance mesurés, plus sensible au bruit de mesure série par série.
+    </p>
     ${
       !profile.maxPowerReliable
-        ? `<p class="muted">« Non estimable » : avec les séries testées, la courbe puissance = f(charge) ne dessine pas un vrai pic exploitable (données trop bruitées ou charges toutes situées d'un même côté du pic réel). Ça n'affecte pas le 1RM estimé ni les zones d'entraînement ci-dessus, qui ne dépendent pas de ce calcul.</p>`
+        ? `<p class="warning">« Donnée du test invalide » : la vélocité mesurée n'a pas diminué quand la charge a augmenté sur cette séance — vérifie les séries saisies (charges/vélocités inversées ?).</p>`
         : ""
     }
   `;

@@ -165,43 +165,40 @@ function computeVbtProfile(sets, bodyweightKg, mvt) {
   const vMaxMeasured = Math.max(...velocities);
   const deltaV = sets.length > 1 ? (vMaxMeasured - vMinMeasured) / (sets.length - 1) : null;
 
-  // Régression quadratique Puissance = f(Charge) -> puissance maximale théorique
+  // Charge et puissance à puissance maximale — méthode théorique à partir de
+  // la droite charge-vélocité (et non d'un ajustement quadratique sur les
+  // points de puissance mesurés).
   //
-  // Avec seulement quelques séries et des données de puissance réelles (donc
-  // bruitées), la régression quadratique peut donner une parabole qui n'a
-  // pas de vrai maximum exploitable : soit elle s'ouvre vers le haut
-  // (coefficient a >= 0 : pas de sommet, juste un minimum), soit son sommet
-  // tombe hors d'une plage physiologiquement plausible (ex: une charge à
-  // puissance max supérieure au 1RM estimé, ce qui est impossible — à charge
-  // maximale la vélocité tend vers 0, donc la puissance aussi). Dans ces cas,
-  // on affiche "non estimable" plutôt qu'un chiffre trompeur. C'est la même
-  // limite que dans le fichier Excel d'origine, où ce point nécessitait un
-  // contrôle visuel du coach sur la courbe avant de retenir l'équation.
-  const { a, b, c } = quadraticRegression(loads, powers);
+  // Pourquoi : avec seulement quelques séries, la puissance mesurée par série
+  // est bruitée (variation technique, fatigue, mesure du capteur...). Ajuster
+  // une parabole directement sur ces quelques points bruités peut donner une
+  // courbe qui n'a pas de vrai sommet exploitable (ex: un sommet situé à une
+  // charge supérieure au 1RM, ce qui est physiquement impossible). C'est la
+  // même limite que dans le fichier Excel d'origine, où ce point nécessitait
+  // un contrôle visuel du coach sur le graphique avant de retenir l'équation.
+  //
+  // On utilise à la place la relation théorique classique en musculation
+  // charge-vélocité (modèle Puissance = Force × Vélocité, avec Force ≈
+  // Charge × g, et une relation charge-vélocité linéaire — cf. Samozino,
+  // Jaric & Markovic) : pour une droite vélocité = f(charge), la puissance
+  // Charge×g×Vélocité(Charge) est elle-même une parabole dont le sommet est
+  // toujours bien défini, à charge = L0/2 et vélocité = V0/2. Résultat
+  // beaucoup plus stable que l'ajustement direct sur les points mesurés, et
+  // toujours calculable dès lors que la droite charge-vélocité est valide
+  // (pente négative — la vélocité diminue quand la charge augmente).
+  const G = 9.81;
   let loadAtMaxPower = null;
   let pctRMatMaxPower = null;
   let powerAtPeak = null;
   let velocityAtPeak = null;
   let relMaxPowerOutput = null;
-  let maxPowerReliable = false;
-  if (a < 0) {
-    const candidateLoad = -b / (2 * a);
-    const withinPlausibleRange =
-      candidateLoad > 0 && (!abs1RM || candidateLoad < abs1RM);
-    if (withinPlausibleRange) {
-      maxPowerReliable = true;
-      loadAtMaxPower = candidateLoad;
-      pctRMatMaxPower = abs1RM ? loadAtMaxPower / abs1RM : null;
-      // Reproduit la formule d'origine : mise à l'échelle de la puissance/vélocité
-      // mesurée maximale par le ratio (charge optimale / charge du point mesuré).
-      let idxMax = 0;
-      for (let i = 1; i < powers.length; i++) if (powers[i] > powers[idxMax]) idxMax = i;
-      if (loads[idxMax]) {
-        powerAtPeak = (loadAtMaxPower * powers[idxMax]) / loads[idxMax];
-        velocityAtPeak = (loadAtMaxPower * velocities[idxMax]) / loads[idxMax];
-      }
-      relMaxPowerOutput = powerAtPeak && bodyweightKg ? powerAtPeak / bodyweightKg : null;
-    }
+  const maxPowerReliable = slope < 0;
+  if (maxPowerReliable) {
+    loadAtMaxPower = l0 / 2;
+    velocityAtPeak = v0 / 2;
+    powerAtPeak = G * loadAtMaxPower * velocityAtPeak;
+    pctRMatMaxPower = abs1RM ? loadAtMaxPower / abs1RM : null;
+    relMaxPowerOutput = bodyweightKg ? powerAtPeak / bodyweightKg : null;
   }
 
   // Zones d'entraînement (méthode % vélocité max — Morin & Samozino)
@@ -235,7 +232,6 @@ function computeVbtProfile(sets, bodyweightKg, mvt) {
     vMaxMeasured,
     deltaV,
     mvtUsed: mvt,
-    powerRegression: { a, b, c },
     maxPowerReliable,
     loadAtMaxPower,
     pctRMatMaxPower,
