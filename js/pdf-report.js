@@ -8,9 +8,20 @@
 const VBT_COLORS = {
   headerOrange: [255, 192, 0], // FFC000
   altYellow: [255, 222, 54], // FFDE36
-  maxStrengthRed: [255, 118, 127], // FF767F
+  maxStrengthRed: [238, 126, 130],
   text: [30, 30, 30],
 };
+
+// Couleurs par zone d'entraînement, reprises à l'identique de l'onglet Excel
+// "CR VITRUVE" d'origine (une teinte pastel distincte par ligne plutôt qu'une
+// alternance jaune/blanc).
+const ZONE_ROW_COLORS = [
+  [209, 236, 249], // Vélocité maximale — bleu clair
+  [223, 241, 211], // Vélocité de puissance — vert clair
+  [236, 207, 237], // Puissance maximale — violet clair
+  [247, 227, 215], // Force-vitesse — orange clair
+  VBT_COLORS.maxStrengthRed, // Force maximale — rouge
+];
 
 function fmt(n, decimals) {
   if (n === null || n === undefined || n === "hors plage") return "hors plage";
@@ -50,24 +61,27 @@ function buildCrVitruvePdf({
   const marginX = 15;
 
   // Logo en haut de page : le "R." seul (icône), distinct du logo complet
-  // (texte + icône) utilisé dans la signature de pied de page.
+  // (texte + icône) utilisé dans la signature de pied de page. Affiché sur
+  // chaque page du document (pas seulement la première).
   const headerLogo = logoIconDataUrl || logoDataUrl;
-  if (headerLogo) {
+  const headerLogoHeight = 26;
+  const headerLogoWidth = logoIconDataUrl ? headerLogoHeight * (328 / 384) : 55;
+  function drawHeaderLogo() {
+    if (!headerLogo) return;
     try {
-      const headerLogoHeight = 20;
-      const headerLogoWidth = logoIconDataUrl ? headerLogoHeight * (328 / 384) : 45;
       doc.addImage(
         headerLogo,
         "JPEG",
         pageWidth - marginX - headerLogoWidth,
         8,
         headerLogoWidth,
-        logoIconDataUrl ? headerLogoHeight : 17
+        logoIconDataUrl ? headerLogoHeight : 20.8
       );
     } catch (e) {
       // silencieux si le logo ne peut pas être chargé
     }
   }
+  drawHeaderLogo();
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
@@ -132,6 +146,7 @@ function buildCrVitruvePdf({
     window.VbtCharts.renderChartPdf(doc, fvData, { x: marginX, y: y + 8, width: chartWidth, height: 95 });
 
     doc.addPage();
+    drawHeaderLogo();
     const pvChartY = 22;
     const pvData = window.VbtCharts.buildPowerVelocityChartData(profile, sets);
     window.VbtCharts.renderChartPdf(doc, pvData, { x: marginX, y: pvChartY, width: chartWidth, height: 95 });
@@ -182,12 +197,11 @@ function buildCrVitruvePdf({
     body: zoneRows,
     theme: "grid",
     styles: { fontSize: 9.5, halign: "center" },
-    headStyles: { fillColor: VBT_COLORS.headerOrange, textColor: [0, 0, 0], fontStyle: "bold" },
-    alternateRowStyles: { fillColor: VBT_COLORS.altYellow },
+    headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: "bold" },
     margin: { left: marginX, right: marginX },
     didParseCell: (data) => {
-      if (data.section === "body" && data.row.index === zoneRows.length - 1) {
-        data.cell.styles.fillColor = VBT_COLORS.maxStrengthRed;
+      if (data.section === "body") {
+        data.cell.styles.fillColor = ZONE_ROW_COLORS[data.row.index] || [255, 255, 255];
       }
     },
   });
